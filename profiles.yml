@@ -10,7 +10,6 @@ dbt_tf:
       role: ACCOUNTADMIN
       warehouse: TRANSFORM_WH
       database: dev_db
-      schema: TRANSFORM_SCH
       threads: 8
 
     dev_mrt:
@@ -21,5 +20,4 @@ dbt_tf:
       role: ACCOUNTADMIN
       warehouse: TRANSFORM_WH
       database: dev_db
-      schema: MART_SCH
       threads: 8
