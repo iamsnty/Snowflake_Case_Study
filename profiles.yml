@@ -1,6 +1,17 @@
 dbt_tf:
   outputs:
-    dev:
+    dev_stg:
+      account: LXYUPGO-WC96196
+      database: dev_db
+      password: Hakkoda@1234567890
+      role: ACCOUNTADMIN
+      schema: TRANSFORM_SCH
+      threads: 8
+      type: snowflake
+      user: ADMIN
+      warehouse: TRANSFORM_WH
+  target: dev_stg
+    dev_mrt:
       account: LXYUPGO-WC96196
       database: dev_db
       password: Hakkoda@1234567890
@@ -10,4 +21,4 @@ dbt_tf:
       type: snowflake
       user: ADMIN
       warehouse: TRANSFORM_WH
-  target: dev
+  target: dev_mrt
