@@ -1,24 +1,25 @@
 dbt_tf:
+  target: dev_stg   # default target when you run dbt commands
+
   outputs:
     dev_stg:
+      type: snowflake
       account: LXYUPGO-WC96196
-      database: dev_db
+      user: ADMIN
       password: Hakkoda@1234567890
       role: ACCOUNTADMIN
+      warehouse: TRANSFORM_WH
+      database: dev_db
       schema: TRANSFORM_SCH
       threads: 8
-      type: snowflake
-      user: ADMIN
-      warehouse: TRANSFORM_WH
-  target: dev_stg
+
     dev_mrt:
+      type: snowflake
       account: LXYUPGO-WC96196
-      database: dev_db
+      user: ADMIN
       password: Hakkoda@1234567890
       role: ACCOUNTADMIN
+      warehouse: TRANSFORM_WH
+      database: dev_db
       schema: MART_SCH
       threads: 8
-      type: snowflake
-      user: ADMIN
-      warehouse: TRANSFORM_WH
-  target: dev_mrt
