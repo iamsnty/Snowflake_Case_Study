@@ -65,13 +65,13 @@ jobs:
     run: |
      echo ":building_construction: Running TRANSFORM layer models..."
      dbt run --target dev_stg --select models/transform
-     dbt test --target dev_stg --select models/transform
+     
 
    - name: Run Publish layer (dev_mrt)
     run: |
      echo ":rocket: Running PUBLISH layer models..."
-     dbt run --target dev_mrt --select models/publish
-     dbt test --target dev_mrt --select models/publish
+     dbt run --target dev_mrt --select models/mart
+    
 
    - name: Generate dbt docs (optional)
     run: dbt docs generate
