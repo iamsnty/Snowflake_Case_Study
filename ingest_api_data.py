@@ -73,7 +73,7 @@ def get_air_quality_data(api_key, limit):
 
             logging.info(f'File Written to local disk with name: {file_name}')
             
-            stg_location = '@dev_db.stage_sch.raw_stg/india/'+today_string+'/'
+            stg_location = '@dev_db.stage_sch.raw_stg/india/'
             sf_session = snowpark_basic_auth()
             
             logging.info(f'Placing the file, the file name is {file_name} and stage location is {stg_location}')
