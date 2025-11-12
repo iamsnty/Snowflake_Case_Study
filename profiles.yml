@@ -1,0 +1,17 @@
+DBT_CI_CD_DEMO:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      threads: 1
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER')}}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: "{{ env_var('SNOWFLAKE_ROLE') }}"
+      database: DBT_CI_DEMO
+      warehouse: COMPUTE_WH
+      schema: SRC
+      client_session_keep_alive: False
+      query_tag: github_action_query
+
+

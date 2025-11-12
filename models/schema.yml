@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: src_customers
+    description: This table has basic information about a customer
+
+    columns:
+      - name: c_custkey
+        description: This is a unique identifier for a given customer
+        tests:
+          - unique
+          - not_null
+      - name: c_mktsegment
+        description: This is market segment of a given customer
+        tests:
+          - not_null
