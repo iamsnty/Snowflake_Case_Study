@@ -23,7 +23,7 @@ with step01_combine_pollutant_cte as (
         MAX(CASE WHEN POLLUTANT_ID = 'CO' THEN POLLUTANT_AVG END) AS CO_AVG,
         MAX(CASE WHEN POLLUTANT_ID = 'OZONE' THEN POLLUTANT_AVG END) AS O3_AVG
     FROM 
-        dev_db.trasnform_sch.clean_aqi_data
+        dev_db.transform_sch.clean_aqi_data
     group by 
         index_record_ts, country, state, city, station, latitude, longitude
         order by country, state, city, station
