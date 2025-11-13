@@ -1,4 +1,7 @@
--- Test: Validate date dimension data quality
+{{ config(
+   
+    schema='MART_SCH'
+) }}
 
 WITH validation AS (
     SELECT
