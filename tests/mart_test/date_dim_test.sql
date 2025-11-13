@@ -1,4 +1,4 @@
-
+{{ config(schema='MART_SCH') }}
 WITH validation AS (
     SELECT
         COUNT(*) AS total_records,
