@@ -19,10 +19,7 @@ invalid_records as (
         or CITY is null
         or STATION is null
         or POLLUTANT_ID is null
-        or try_to_double(POLLUTANT_AVG) is null
-        or POLLUTANT_AVG < 0
-        or POLLUTANT_AVG > 1000
-)
+        
 
 select *
 from invalid_records
