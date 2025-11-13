@@ -41,69 +41,64 @@ def snowpark_basic_auth() -> Session:
 def get_air_quality_data(api_key, limit):
     api_url = 'https://api.data.gov.in/resource/3b01bcb8-0b14-4abf-b6f2-c1bfd384ba69'
     
-    # Parameters for the API request
-    params = {
-        'api-key': api_key,
-        'format': 'json',
-        'limit': limit
-    }
-
-    # Headers for the API request
-    headers = {
-        'accept': 'application/json'
-    }
-
-    try:
-        # Make the GET request
-        response = requests.get(api_url, params=params, headers=headers)
-
-        logging.info('Got the response, check if 200 or not')
-        # Check if the request was successful (status code 200)
-        if response.status_code == 200:
-
-            logging.info('Got the JSON Data')
-            # Parse the JSON data from the response
+    all_records = []
+    offset = 0
+    
+    while True:
+        params = {
+            'api-key': api_key,
+            'format': 'json',
+            'limit': limit,
+            'offset': offset
+        }
+        headers = {'accept': 'application/json'}
+        
+        try:
+            response = requests.get(api_url, params=params, headers=headers)
+            logging.info(f'Getting data batch with offset: {offset}')
+            
+            if response.status_code != 200:
+                logging.error(f"Error: {response.status_code} - {response.text}")
+                sys.exit(1)
+            
             json_data = response.json()
+            batch_records = json_data.get('records', [])
+            
+            all_records.extend(batch_records)
+            
+            total_records = int(json_data.get('total', 0))
+            offset += limit
+            
+            logging.info(f"Batch size: {len(batch_records)}; Total collected: {len(all_records)} of {total_records}")
+            
+            if offset >= total_records:
+                logging.info('All records fetched')
+                break
 
-
-            logging.info('Writing the JSON file into local location before it moved to snowflake stage')
-            # Save the JSON data to a file
-            with open(file_name, 'w') as json_file:
-                json.dump(json_data, json_file, indent=2)
-
-            logging.info(f'File Written to local disk with name: {file_name}')
-            
-            stg_location = '@dev_db.stage_sch.raw_stg/india/'
-            sf_session = snowpark_basic_auth()
-            
-            logging.info(f'Placing the file, the file name is {file_name} and stage location is {stg_location}')
-            sf_session.file.put(file_name, stg_location)
-            
-            logging.info('JSON File placed successfully in stage location in snowflake')
-            lst_query = f'list {stg_location}{file_name}.gz'
-            
-            logging.info(f'list query to fetch the stage file to check if they exist there or not = {lst_query}')
-            result_lst = sf_session.sql(lst_query).collect()
-            
-            logging.info(f'File is placed in snowflake stage location= {result_lst}')
-            logging.info('The job over successfully...')
-            
-            # Return the retrieved data
-            return json_data
-
-        else:
-            # Print an error message if the request was unsuccessful
-            logging.error(f"Error: {response.status_code} - {response.text}")
+        except Exception as e:
+            logging.error(f"An error occurred: {e}")
             sys.exit(1)
-            #return None
+    
+    # Save full collected data to file
+    with open(file_name, 'w') as json_file:
+        json.dump({'records': all_records}, json_file, indent=2)
+    logging.info(f'All data written to local file: {file_name}')
+    
+    # Proceed with Snowflake file upload stage as in your existing code
+    stg_location = '@dev_db.stage_sch.raw_stg/india/'
+    sf_session = snowpark_basic_auth()
+    logging.info(f'Uploading the file {file_name} to Snowflake stage {stg_location}')
+    sf_session.file.put(file_name, stg_location)
+    logging.info('JSON File placed successfully in Snowflake stage location')
 
-    except Exception as e:
-        # Handle exceptions, if any
-        logging.error(f"An error occurred: {e}")
-        sys.exit(1)
-        #return None
-    #if comes to this line.. it will return nothing
-    return None
+    lst_query = f'list {stg_location}{file_name}.gz'
+    logging.info(f'Listing files in Snowflake stage to verify placement: {lst_query}')
+    result_lst = sf_session.sql(lst_query).collect()
+    logging.info(f'Stage files: {result_lst}')
+    
+    logging.info('Job completed successfully.')
+    return {'records': all_records}
+
 
 # Replace 'YOUR_API_KEY' with your actual API key
 api_key = '579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b'
