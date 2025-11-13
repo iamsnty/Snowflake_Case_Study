@@ -65,11 +65,18 @@ jobs:
         run: |
           echo "🏗️ Running TRANSFORM layer models..."
           dbt run --target dev_stg --select models/transform
+          
 
       - name: Run Publish layer (dev_mrt)
         run: |
           echo "🚀 Running PUBLISH layer models..."
           dbt run --target dev_mrt --select models/mart
+          
+      - name: Run dbt data quality tests
+        run: |
+          echo ":mag: Running data quality tests..."
+          dbt test --select tests/clean_aqi_data_test.sql
+      
 
       - name: Generate dbt docs (optional)
         run: dbt docs generate
