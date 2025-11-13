@@ -1,7 +1,3 @@
-{{ config(
-   
-    schema='MART_SCH'
-) }}
 
 WITH validation AS (
     SELECT
