@@ -38,3 +38,13 @@ models:
       +materialized: incremental
 
 
+
+tests:
+  dbt_tf:
+    transform_tests:
+      +schema: 
+    mart_tests:
+      +schema: 
+
+
+
