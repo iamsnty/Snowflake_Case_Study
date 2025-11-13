@@ -75,7 +75,7 @@ jobs:
       - name: Run dbt data quality tests
         run: |
           echo ":mag: Running data quality tests..."
-          dbt test --select tests/clean_aqi_data_test.sql
+          dbt test 
       
 
       - name: Generate dbt docs (optional)
