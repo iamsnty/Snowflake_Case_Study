@@ -19,4 +19,4 @@ WHERE
     OR invalid_year > 0
     OR invalid_month > 0
     OR invalid_day > 0
-    OR invalid_hour > 0
+    OR invalid_hour < 0
