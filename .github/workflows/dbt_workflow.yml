@@ -72,10 +72,15 @@ jobs:
           echo "🚀 Running PUBLISH layer models..."
           dbt run --target dev_mrt --select models/mart
           
-      - name: Run dbt data quality tests
+      - name: Run dbt data quality tests (dev_stg)
         run: |
-          echo ":mag: Running data quality tests..."
-          dbt test 
+         echo "🔍 Running data quality tests for TRANSFORM layer..."
+         dbt test --target dev_stg --select tests/transform_test
+
+      - name: Run dbt data quality tests (dev_mrt)
+        run: |
+         echo "🧪 Running data quality tests for PUBLISH layer..."
+         dbt test --target dev_mrt --select tests/mart_test
       
 
       - name: Generate dbt docs (optional)
