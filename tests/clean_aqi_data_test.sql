@@ -19,7 +19,7 @@ invalid_records as (
         or CITY is null
         or STATION is null
         or POLLUTANT_ID is null
-        
+      )  
 
 select *
 from invalid_records
