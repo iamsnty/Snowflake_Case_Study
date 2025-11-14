@@ -9,105 +9,107 @@ import logging
 # initiate logging at info level
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(levelname)s - %(message)s')
 
-# Set the IST time zone
-ist_timezone = pytz.timezone('Asia/Kolkata')
+# Constants
+API_KEY = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b"
+BASE_URL = "https://api.data.gov.in/resource/3b01bcb8-0b14-4abf-b6f2-c1bfd384ba69"
+LIMIT = 100  # records per call
 
-# Get the current time in IST
-current_time_ist = datetime.now(ist_timezone)
 
-# Format the timestamp
-timestamp = current_time_ist.strftime('%Y_%m_%d_%H_%M_%S')
-
-# Create the file name
-file_name = f'air_quality_data_{timestamp}.json'
-
-today_string = current_time_ist.strftime('%Y_%m_%d')
-
-# Following credential has to come using secret whie running in automated way
+# -------------------------------
+# 1️⃣ Snowflake Connection
+# -------------------------------
 def snowpark_basic_auth() -> Session:
     connection_parameters = {
-       "ACCOUNT":"LXYUPGO-WC96196",
-        "USER":"ADMIN",
-        "PASSWORD":"Hakkoda@1234567890",
-        "ROLE":"ACCOUNTADMIN",
-        "DATABASE":"dev_db",
-        "SCHEMA":"stage_sch",
-        "WAREHOUSE":"load_wh"
+        "ACCOUNT": "LXYUPGO-WC96196",
+        "USER": "ADMIN",
+        "PASSWORD": "Hakkoda@1234567890",
+        "ROLE": "ACCOUNTADMIN",
+        "DATABASE": "dev_db",
+        "SCHEMA": "stage_sch",
+        "WAREHOUSE": "load_wh"
     }
-    # creating snowflake session object
     return Session.builder.configs(connection_parameters).create()
 
 
-def get_air_quality_data(api_key, limit):
-    api_url = 'https://api.data.gov.in/resource/3b01bcb8-0b14-4abf-b6f2-c1bfd384ba69'
-    
-    # Parameters for the API request
-    params = {
-        'api-key': api_key,
-        'format': 'json',
-        'limit': limit
-    }
+# -------------------------------
+# 2️⃣ Fetch ALL paginated API data (NO FILTER)
+# -------------------------------
+def fetch_all_data(api_key):
+    offset = 0
+    all_records = []
 
-    # Headers for the API request
-    headers = {
-        'accept': 'application/json'
-    }
+    logging.info("🔎 Fetching ALL records from API using pagination...")
 
-    try:
-        # Make the GET request
-        response = requests.get(api_url, params=params, headers=headers)
+    while True:
+        params = {
+            "api-key": api_key,
+            "format": "json",
+            "limit": LIMIT,
+            "offset": offset
+        }
 
-        logging.info('Got the response, check if 200 or not')
-        # Check if the request was successful (status code 200)
-        if response.status_code == 200:
+        response = requests.get(BASE_URL, params=params)
+        response.raise_for_status()
+        data = response.json()
 
-            logging.info('Got the JSON Data')
-            # Parse the JSON data from the response
-            json_data = response.json()
+        records = data.get('records', [])
+        all_records.extend(records)
 
+        logging.info(f"✔️ Retrieved {len(records)} records... offset={offset}")
 
-            logging.info('Writing the JSON file into local location before it moved to snowflake stage')
-            # Save the JSON data to a file
-            with open(file_name, 'w') as json_file:
-                json.dump(json_data, json_file, indent=2)
+        total_records = int(data.get("total", 0))
+        offset += LIMIT
 
-            logging.info(f'File Written to local disk with name: {file_name}')
-            
-            stg_location = '@dev_db.stage_sch.raw_stg/india/'
-            sf_session = snowpark_basic_auth()
-            
-            logging.info(f'Placing the file, the file name is {file_name} and stage location is {stg_location}')
-            sf_session.file.put(file_name, stg_location)
-            
-            logging.info('JSON File placed successfully in stage location in snowflake')
-            lst_query = f'list {stg_location}{file_name}.gz'
-            
-            logging.info(f'list query to fetch the stage file to check if they exist there or not = {lst_query}')
-            result_lst = sf_session.sql(lst_query).collect()
-            
-            logging.info(f'File is placed in snowflake stage location= {result_lst}')
-            logging.info('The job over successfully...')
-            
-            # Return the retrieved data
-            return json_data
+        if offset >= total_records:
+            break
 
-        else:
-            # Print an error message if the request was unsuccessful
-            logging.error(f"Error: {response.status_code} - {response.text}")
-            sys.exit(1)
-            #return None
-
-    except Exception as e:
-        # Handle exceptions, if any
-        logging.error(f"An error occurred: {e}")
-        sys.exit(1)
-        #return None
-    #if comes to this line.. it will return nothing
-    return None
-
-# Replace 'YOUR_API_KEY' with your actual API key
-api_key = '579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b'
+    logging.info(f"🎯 Total records fetched = {len(all_records)}")
+    return all_records
 
 
-limit_value = 4000
-air_quality_data = get_air_quality_data(api_key, limit_value)
+# -------------------------------
+# 3️⃣ Save data to local file & upload to Snowflake stage
+# -------------------------------
+def upload_to_snowflake_stage(records, filename, today_string):
+    sf_session = snowpark_basic_auth()
+
+    # Save locally
+    with open(filename, "w") as json_file:
+        json.dump(records, json_file, indent=2)
+
+    logging.info(f"💾 File saved locally: {filename}")
+
+    # Upload to stage
+    stage_path = f"@dev_db.stage_sch.raw_stg/india"
+    logging.info(f"🚀 Uploading to Snowflake stage: {stage_path}")
+
+    sf_session.file.put(filename, stage_path)
+
+    # Validate upload
+    check_query = f"list {stage_path}{filename}.gz"
+    result = sf_session.sql(check_query).collect()
+
+    logging.info(f"📂 File present in stage: {result}")
+
+
+# -------------------------------
+# 4️⃣ Main Execution
+# -------------------------------
+if __name__ == "__main__":
+
+    # IST timestamp
+    ist = pytz.timezone("Asia/Kolkata")
+    now = datetime.now(ist)
+
+    today_string = now.strftime("%Y_%m_%d")
+    timestamp = now.strftime("%Y_%m_%d_%H_%M_%S")
+
+    file_name = f"air_quality_full_{timestamp}.json"
+
+    # Step 1 → fetch ALL records (NO FILTER)
+    all_data = fetch_all_data(API_KEY)
+
+    # Step 2 → upload JSON to Snowflake stage
+    upload_to_snowflake_stage(all_data, file_name, today_string)
+
+    logging.info("🎉 Job completed successfully!")
