@@ -15,8 +15,8 @@ with air_quality_with_rank as (
         _stg_file_md_5,
         _copy_data_ts,
         row_number() over (
-            partition by index_record_ts 
-            order by _stg_file_load_ts desc
+            partition by id 
+            order by index_record_ts desc
         ) as latest_file_rank
     from dev_db.stage_api_final.air_quality
     where index_record_ts is not null
