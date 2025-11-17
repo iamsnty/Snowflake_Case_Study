@@ -42,7 +42,7 @@ select
     hourly_rec.value:pollutant_avg::text as pollutant_avg,
     _stg_file_name,
     _stg_file_load_ts,
-    _stg_file_md5,
+    _stg_file_md_5,
     _copy_data_ts
 from unique_air_quality_data,
      lateral flatten (input => json_data:records) hourly_rec
