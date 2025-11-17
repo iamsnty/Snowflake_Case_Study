@@ -21,4 +21,4 @@ select
     hash(measurement_time) as date_pk,
     *
 from step01_hr_data
-order by aqi_year, aqi_month, aqi_day, aqi_hour;
+order by aqi_year, aqi_month, aqi_day, aqi_hour
