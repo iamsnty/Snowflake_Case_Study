@@ -44,5 +44,4 @@ select
     _stg_file_load_ts,
     _stg_file_md_5,
     _copy_data_ts
-from unique_air_quality_data,
-     lateral flatten (input => json_data:records) hourly_rec
+from unique_air_quality_data
