@@ -7,6 +7,7 @@
 
 with air_quality_with_rank as (
     select 
+    id,
         index_record_ts,
         json_data,
         record_count,
