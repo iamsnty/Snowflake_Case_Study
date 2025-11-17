@@ -18,7 +18,7 @@ with air_quality_with_rank as (
             partition by index_record_ts 
             order by _stg_file_load_ts desc
         ) as latest_file_rank
-    from dev_db.stage_sch.raw_aqi
+    from dev_db.stage_api_final.air_quality
     where index_record_ts is not null
 ),
 
