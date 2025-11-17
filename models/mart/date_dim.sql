@@ -1,6 +1,7 @@
 
 {{ config(
     materialized='incremental',
+    unique_key='date_pk',
     target_lag='downstream',
     warehouse='transform_wh'
 ) }}
