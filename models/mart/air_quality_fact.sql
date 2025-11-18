@@ -3,6 +3,7 @@
 {{ config(
     materialized='incremental',
     target_lag='downstream',
+    unique_key='aqi_pk'
     warehouse='transform_wh'
 ) }}
 
