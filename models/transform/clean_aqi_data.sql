@@ -1,6 +1,5 @@
 {{ config(
-    materialized='incremental',
-    unique_key='id',
+    materialized='table',
     target_lag='downstream',
     warehouse='transform_wh'
 ) }}
