@@ -1,7 +1,7 @@
 
 
 {{ config(
-    materialized='incremental',
+    materialized='table',
     warehouse='transform_wh'
 ) }}
 
