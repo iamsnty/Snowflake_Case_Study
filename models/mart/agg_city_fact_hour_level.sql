@@ -2,7 +2,6 @@
 
 {{ config(
     materialized='incremental',
-    target_lag='downstream',
     warehouse='transform_wh'
 ) }}
 
